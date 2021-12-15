@@ -17,12 +17,14 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from users.views import UserViewSet
+from users.views import UserViewSet, get_view, post_view
 
 router = DefaultRouter()
 router.register('users', UserViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include(router.urls))
+    path('api/', include(router.urls)),
+    path('api/get/', get_view),
+    path('api/post/', post_view),
 ]
