@@ -2,12 +2,13 @@ import io
 
 from django.http import HttpResponse, HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.serializers import Serializer, CharField, EmailField, ValidationError
-from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
-from .serializers import UserSerializer
+from rest_framework.renderers import JSONRenderer
+from rest_framework.serializers import Serializer, CharField, EmailField, ValidationError
+from rest_framework.viewsets import ModelViewSet
+
 from .models import Profile
+from .serializers import UserSerializer
 
 
 class UserViewSet(ModelViewSet):
