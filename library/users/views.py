@@ -1,9 +1,9 @@
 import io
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.serializers import Serializer, CharField, EmailField
+from rest_framework.serializers import Serializer, CharField, EmailField, ValidationError
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from .serializers import UserSerializer
@@ -20,6 +20,16 @@ class UsersSerializer(Serializer):
     first_name = CharField(max_length=64)
     last_name = CharField(max_length=64)
     email = EmailField()
+
+    def validate_username(self, value):
+        if len(value) < 3:
+            raise ValidationError('Name must be more then 3 ch length')
+        return value
+
+    def validate(self, attrs):
+        if attrs.get('first_name') == 'ololo' and attrs['username'] != 'xxx':
+            raise ValidationError('username must be xxx')
+        return attrs
 
     def update(self, instance, validated_data):
         instance.username = validated_data.get('username')
@@ -49,9 +59,15 @@ def post_view(request):
     print(request.body)
     data = JSONParser().parse(io.BytesIO(request.body))
 
-    user = Profile.objects.get(pk=3)
+    if request.method == 'POST':
+        serializer = UsersSerializer(data=data)
+    elif request.method == 'PUT':
+        user = Profile.objects.get(pk=3)
+        serializer = UsersSerializer(user, data=data)
+    elif request.method == 'PATCH':
+        user = Profile.objects.get(pk=3)
+        serializer = UsersSerializer(user, data=data, partial=True)
 
-    serializer = UsersSerializer(user, data=data, partial=True)
     if serializer.is_valid():
         print(serializer.validated_data)
 
@@ -61,3 +77,5 @@ def post_view(request):
         json_data = render.render(serializer.data)
         print(serializer.data)
         return HttpResponse(json_data)
+    else:
+        return HttpResponseServerError(serializer.errors.get('non_field_errors'))
